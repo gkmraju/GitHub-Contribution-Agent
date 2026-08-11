@@ -100,6 +100,6 @@ jobs:
             exit 1
           fi
 
-          report_name="$(basename "$clean_report_file")"
-          curl --fail-with-body --silent --show-error --output /tmp/telegram-document-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" --form "chat_id=${TELEGRAM_CHAT_ID}" --form "document=@-;type=text/markdown;filename=${report_name}" < "$report_path" --form "caption=Full daily GitHub contribution report"
+          report_url="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/${clean_report_file}"
+          curl --fail-with-body --silent --show-error --output /tmp/telegram-document-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" --form-string "chat_id=${TELEGRAM_CHAT_ID}" --form-string "document=${report_url}" --form-string "caption=Full daily GitHub contribution report"
           echo "Telegram report attachment sent."
