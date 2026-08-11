@@ -1,0 +1,14 @@
+[scouting]
+areas = ["artificial-intelligence", "finance", "open-source", "software-engineering"]
+preferred_labels = ["good first issue", "help wanted", "bug", "documentation"]
+
+[planning]
+prefer_small_changes = true
+max_changed_files = 5
+fallback_workspace = "fallback-contributions"
+
+[publication]
+draft_pull_requests = true
+require_recorded_validation = true
+allow_legal_attestations = false
+allow_personal_representations = false
