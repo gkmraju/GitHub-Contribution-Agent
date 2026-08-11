@@ -1,0 +1,94 @@
+name: Telegram report delivery
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: Message to send for a manual test
+        required: false
+        default: "Telegram delivery test from GitHub-Contribution-Agent"
+  push:
+    branches:
+      - main
+    paths:
+      - "logs/**/*.md"
+      - "reports/**/*.md"
+
+permissions:
+  contents: read
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Prepare Telegram payload
+        id: payload
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_MESSAGE: ${{ inputs.message }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            {
+              printf '✅ %s\n\n' "${INPUT_MESSAGE:-Telegram delivery test}"
+              printf 'Repository: %s\n' "$GITHUB_REPOSITORY"
+              printf 'Workflow run: %s/%s/actions/runs/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+            } > telegram-message.txt
+            echo "report_file=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          report_file="$(
+            git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" |
+              grep -E '^(logs|reports)/.*\.md$' |
+              head -n 1 || true
+          )"
+
+          if [[ -z "$report_file" || ! -f "$report_file" ]]; then
+            echo "No changed Markdown report was found."
+            exit 1
+          fi
+
+          {
+            printf '📘 Daily GitHub contribution report\n\n'
+            printf 'Repository: %s\n' "$GITHUB_REPOSITORY"
+            printf 'Report: %s\n' "$report_file"
+            printf 'Commit: %s/%s/commit/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_SHA"
+            printf '\nThe complete evidence-based report is attached.'
+          } > telegram-message.txt
+
+          echo "report_file=$report_file" >> "$GITHUB_OUTPUT"
+
+      - name: Send Telegram message
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+            echo "Required Telegram secrets are missing."
+            exit 1
+          fi
+
+          curl --fail-with-body --silent --show-error             --request POST             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}"             --data-urlencode "text@telegram-message.txt"             --data-urlencode "disable_web_page_preview=true"
+
+      - name: Attach full report
+        if: steps.payload.outputs.report_file != ''
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPORT_FILE: ${{ steps.payload.outputs.report_file }}
+        run: |
+          set -euo pipefail
+
+          curl --fail-with-body --silent --show-error             --request POST             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"             --form "chat_id=${TELEGRAM_CHAT_ID}"             --form "document=@${REPORT_FILE}"             --form "caption=Full daily GitHub contribution report"
