@@ -50,19 +50,19 @@ jobs:
             exit 1
           fi
 
-          mapfile -t brief_lines < <(
-            grep -Ev '^[[:space:]]*(#|$)' "$report_file" |
-              sed -E 's/^[[:space:]]*[-*][[:space:]]*//' |
-              head -n 2
-          )
+          awk '
+            /<!-- telegram-brief:start -->/ { capture=1; next }
+            /<!-- telegram-brief:end -->/ { capture=0 }
+            capture
+          ' "$report_file" > telegram-message.txt
 
-          details_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/$report_file"
-          {
-            printf '📘 Daily GitHub brief\n'
-            printf '%s\n' "${brief_lines[0]:-Report completed.}"
-            printf '%s\n' "${brief_lines[1]:-See details for the full research record.}"
-            printf 'Details: %s\n' "$details_url"
-          } > telegram-message.txt
+          if [[ ! -s telegram-message.txt ]]; then
+            echo "The report does not contain a Telegram brief block."
+            exit 1
+          fi
+
+          head -c 3900 telegram-message.txt > telegram-message.trimmed.txt
+          mv telegram-message.trimmed.txt telegram-message.txt
 
       - name: Send Telegram brief
         shell: bash
@@ -78,4 +78,4 @@ jobs:
           fi
 
           curl --fail-with-body --silent --show-error --output /tmp/telegram-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@telegram-message.txt" --data-urlencode "disable_web_page_preview=true"
-          echo "Concise Telegram brief sent."
+          echo "Concise Telegram research and contribution brief sent."
