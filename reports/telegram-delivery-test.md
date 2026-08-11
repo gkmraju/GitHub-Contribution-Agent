@@ -1,8 +1,4 @@
-# Telegram Delivery Test
+# Telegram Brief Test
 
-- Date: 2026-08-11
-- Attempt: 4
-- Repository: gkmraju/GitHub-Contribution-Agent
-- Purpose: Verify that GitHub Actions can read the configured Telegram secrets and deliver both a summary message and a Markdown report attachment.
-- Expected result: A Telegram channel message titled "Daily GitHub contribution report" followed by this file as an attachment.
-- Secret handling: Bot token and channel ID remain stored only as encrypted GitHub Actions secrets.
+- Outcome: Telegram brief-only delivery is configured and attachments are disabled.
+- Impact/Learning: Daily results stay concise; the full evidence remains available through the GitHub link.
