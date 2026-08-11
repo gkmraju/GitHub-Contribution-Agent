@@ -79,7 +79,8 @@ jobs:
             exit 1
           fi
 
-          curl --fail-with-body --silent --show-error             --request POST             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}"             --data-urlencode "text@telegram-message.txt"             --data-urlencode "disable_web_page_preview=true"
+          curl --fail-with-body --silent --show-error --output /tmp/telegram-message-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@telegram-message.txt" --data-urlencode "disable_web_page_preview=true"
+          echo "Telegram summary message sent."
 
       - name: Attach full report
         if: steps.payload.outputs.report_file != ''
@@ -91,4 +92,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl --fail-with-body --silent --show-error             --request POST             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"             --form "chat_id=${TELEGRAM_CHAT_ID}"             --form "document=@${REPORT_FILE}"             --form "caption=Full daily GitHub contribution report"
+          clean_report_file="$(printf '%s' "$REPORT_FILE" | tr -d '\r\n')"
+          report_path="$GITHUB_WORKSPACE/$clean_report_file"
+
+          if [[ ! -r "$report_path" ]]; then
+            echo "Report attachment is not readable: $clean_report_file"
+            exit 1
+          fi
+
+          report_name="$(basename "$clean_report_file")"
+          curl --fail-with-body --silent --show-error --output /tmp/telegram-document-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" --form "chat_id=${TELEGRAM_CHAT_ID}" --form "document=@${report_path};type=text/markdown;filename=${report_name}" --form "caption=Full daily GitHub contribution report"
+          echo "Telegram report attachment sent."
