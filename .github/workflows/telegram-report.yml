@@ -6,7 +6,7 @@ on:
       message:
         description: Message to send for a manual test
         required: false
-        default: "Telegram delivery test from GitHub-Contribution-Agent"
+        default: "Telegram brief delivery test"
   push:
     branches:
       - main
@@ -26,8 +26,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Prepare Telegram payload
-        id: payload
+      - name: Prepare concise brief
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -36,12 +35,7 @@ jobs:
           set -euo pipefail
 
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            {
-              printf '✅ %s\n\n' "${INPUT_MESSAGE:-Telegram delivery test}"
-              printf 'Repository: %s\n' "$GITHUB_REPOSITORY"
-              printf 'Workflow run: %s/%s/actions/runs/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
-            } > telegram-message.txt
-            echo "report_file=" >> "$GITHUB_OUTPUT"
+            printf '✅ %s\nRepository: %s\n' "${INPUT_MESSAGE:-Telegram brief delivery test}" "$GITHUB_REPOSITORY" > telegram-message.txt
             exit 0
           fi
 
@@ -56,17 +50,21 @@ jobs:
             exit 1
           fi
 
+          mapfile -t brief_lines < <(
+            grep -Ev '^[[:space:]]*(#|$)' "$report_file" |
+              sed -E 's/^[[:space:]]*[-*][[:space:]]*//' |
+              head -n 2
+          )
+
+          details_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/$report_file"
           {
-            printf '📘 Daily GitHub contribution report\n\n'
-            printf 'Repository: %s\n' "$GITHUB_REPOSITORY"
-            printf 'Report: %s\n' "$report_file"
-            printf 'Commit: %s/%s/commit/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_SHA"
-            printf '\nThe complete evidence-based report is attached.'
+            printf '📘 Daily GitHub brief\n'
+            printf '%s\n' "${brief_lines[0]:-Report completed.}"
+            printf '%s\n' "${brief_lines[1]:-See details for the full research record.}"
+            printf 'Details: %s\n' "$details_url"
           } > telegram-message.txt
 
-          echo "report_file=$report_file" >> "$GITHUB_OUTPUT"
-
-      - name: Send Telegram message
+      - name: Send Telegram brief
         shell: bash
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -79,27 +77,5 @@ jobs:
             exit 1
           fi
 
-          curl --fail-with-body --silent --show-error --output /tmp/telegram-message-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@telegram-message.txt" --data-urlencode "disable_web_page_preview=true"
-          echo "Telegram summary message sent."
-
-      - name: Attach full report
-        if: steps.payload.outputs.report_file != ''
-        shell: bash
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          REPORT_FILE: ${{ steps.payload.outputs.report_file }}
-        run: |
-          set -euo pipefail
-
-          clean_report_file="$(printf '%s' "$REPORT_FILE" | tr -d '\r\n')"
-          report_path="$GITHUB_WORKSPACE/$clean_report_file"
-
-          if [[ ! -r "$report_path" ]]; then
-            echo "Report attachment is not readable: $clean_report_file"
-            exit 1
-          fi
-
-          report_url="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/${clean_report_file}"
-          curl --fail-with-body --silent --show-error --output /tmp/telegram-document-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" --form-string "chat_id=${TELEGRAM_CHAT_ID}" --form-string "document=${report_url}" --form-string "caption=Full daily GitHub contribution report"
-          echo "Telegram report attachment sent."
+          curl --fail-with-body --silent --show-error --output /tmp/telegram-response.json --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@telegram-message.txt" --data-urlencode "disable_web_page_preview=true"
+          echo "Concise Telegram brief sent."
