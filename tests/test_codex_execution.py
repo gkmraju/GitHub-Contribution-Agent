@@ -19,6 +19,7 @@ def request(**overrides):
         "issue_url": "https://github.com/owner/project/issues/4",
         "workspace_directory": "/tmp/project-worktree",
         "branch_name": "fix/parser-edge-case",
+        "default_branch": "main",
         "base_revision": "a" * 40,
         "allowed_paths": ("src/parser.py", "tests/test_parser.py"),
         "validation_commands": ("python -m unittest tests.test_parser",),
@@ -54,9 +55,15 @@ class CodexExecutionAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "isolated workspace"):
             validate_execution_request(request(workspace_isolated=False))
 
-    def test_rejects_default_branch(self):
+    def test_rejects_repository_default_branch(self):
         with self.assertRaisesRegex(ValueError, "non-default branch"):
             validate_execution_request(request(branch_name="main"))
+
+    def test_rejects_custom_repository_default_branch(self):
+        with self.assertRaisesRegex(ValueError, "non-default branch"):
+            validate_execution_request(
+                request(branch_name="stable", default_branch="stable")
+            )
 
     def test_rejects_parent_traversal_path(self):
         with self.assertRaisesRegex(ValueError, "must not escape"):
