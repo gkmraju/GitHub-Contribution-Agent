@@ -4,6 +4,8 @@ A responsible daily workflow for finding and completing small, useful open-sourc
 contributions. The project separates research, analysis, planning, execution, and
 fallback work so that activity never becomes the goal by itself.
 
+[Try the public offline demo](docs/PUBLIC_DEMO.md) with a clearly synthetic sample.
+
 ## Principles
 
 - Research current opportunities across AI, finance, open source, and software
