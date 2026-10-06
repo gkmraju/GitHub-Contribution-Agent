@@ -31,9 +31,10 @@ class AuditMetricsTests(unittest.TestCase):
             })
 
     def test_rejects_invalid_json_with_line_number(self):
+        event = {"run_id": "r1", "event_type": "planned", "decision": "upstream"}
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "events.jsonl"
-            path.write_text("{}\nnot-json\n", encoding="utf-8")
+            path.write_text(json.dumps(event) + "\nnot-json\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "line 2"):
                 summarize_audit_log(path)
 
