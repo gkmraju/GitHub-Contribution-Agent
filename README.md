@@ -17,6 +17,8 @@ fallback work so that activity never becomes the goal by itself.
 - Never claim a validation passed unless that exact validation was run successfully.
 - Never accept a CLA, DCO, legal attestation, or make a personal representation.
 - Open pull requests as drafts until a human decides they are ready.
+- Preserve genuine Codex and contribution evidence; never invent prompts, logs, or
+  tool attribution.
 
 ## Project layout
 
@@ -31,6 +33,10 @@ fallback work so that activity never becomes the goal by itself.
 | `config/` | Topics, effort limits, and safety defaults |
 | `tests/` | Deterministic offline tests |
 | `.github/workflows/` | Continuous validation |
+
+See [the maintainer-agent architecture](docs/ARCHITECTURE.md) for current boundaries
+and the target execution lifecycle. See [Codex workflow and evidence](docs/CODEX_WORKFLOW.md)
+for attribution rules and links to genuine public records.
 
 `quant-github-scout` remains a separate quant-repository discovery project. It may
 be used as one future data source, but this repository owns contribution decisions,
