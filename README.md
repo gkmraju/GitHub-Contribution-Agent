@@ -25,12 +25,14 @@ fallback work so that activity never becomes the goal by itself.
 | `src/github_contribution_agent/scouting/` | Discover and normalize opportunities |
 | `src/github_contribution_agent/analysis/` | Apply evidence and safety gates |
 | `src/github_contribution_agent/planning/` | Select the smallest useful next step |
-| `src/github_contribution_agent/execution/` | Guard publication and validation claims |
+| `src/github_contribution_agent/execution/` | Guard execution and publication |
 | `fallback-contributions/` | Independently reviewable work when upstream is blocked |
 | `logs/` | Daily evidence and decisions |
 | `config/` | Topics, effort limits, and safety defaults |
 | `tests/` | Deterministic offline tests |
 | `.github/workflows/` | Continuous validation |
+
+Maintainer preflight requirements are documented in [docs/MAINTAINER_SAFETY.md](docs/MAINTAINER_SAFETY.md).
 
 `quant-github-scout` remains a separate quant-repository discovery project. It may
 be used as one future data source, but this repository owns contribution decisions,
