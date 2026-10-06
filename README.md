@@ -46,6 +46,38 @@ python -m compileall -q src tests
 The initial implementation uses only the Python standard library and supports
 Python 3.11 or newer.
 
+## Audit owned repositories
+
+Run a read-only repository health audit for a GitHub owner:
+
+```console
+PYTHONPATH=src python -m github_contribution_agent audit-repos gkmraju --format markdown --output repo-health.md
+```
+
+Set `GH_TOKEN` (or `GITHUB_TOKEN`) for authenticated API limits. The token is
+sent only in the HTTPS authorization header; the command performs no GitHub
+writes. A saved snapshot can be scored offline and reproducibly:
+
+```console
+PYTHONPATH=src python -m github_contribution_agent audit-repos gkmraju --input repositories.json --as-of 2026-08-17
+```
+
+The audit scores each repository from 0 to 100 across:
+
+- recent activity and longer-term staleness;
+- CI and deterministic tests;
+- README, license, and contribution documentation;
+- dependency manifests, locks, or update automation;
+- ignore rules, security policy, update automation, and ownership configuration;
+- fork divergence from the upstream default branch.
+
+Results are ranked by actionable priority and include concrete optimization
+opportunities. Archived repositories remain read-only. Forks without explicitly
+recorded purposeful divergence receive only sync, divergence-assessment, purpose,
+or archive recommendations; the audit does not manufacture engineering changes
+for them. `quant-github-scout` remains an independent project and is never
+absorbed by this command.
+
 ## Evaluate an opportunity
 
 Create a JSON document matching the fields in `Opportunity`, then run:
