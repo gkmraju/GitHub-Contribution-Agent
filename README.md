@@ -56,3 +56,10 @@ PYTHONPATH=src python -m github_contribution_agent evaluate opportunity.json
 
 The result is `upstream`, `fallback`, or `reject`, with explicit reasons suitable
 for a daily log.
+
+## Screen for duplicate issues
+
+Use the offline duplicate matcher to surface same-repository issue candidates for
+human review. It does not decide that two issues are duplicates or write to GitHub.
+See [Issue analysis and duplicate screening](docs/ISSUE_ANALYSIS.md) for score
+interpretation and limitations.
