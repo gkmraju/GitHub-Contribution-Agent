@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a bounded improvement tied to a maintainer problem.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Who encounters the problem, and what task is blocked?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful behavior and how it could be reviewed.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and constraints
+      description: What workarounds exist? Note safety or privacy constraints.
+    validations:
+      required: false
+  - type: checkboxes
+    id: evidence
+    attributes:
+      label: Evidence
+      options:
+        - label: This is based on a real workflow or user need, not a request to inflate activity metrics.
+          required: true

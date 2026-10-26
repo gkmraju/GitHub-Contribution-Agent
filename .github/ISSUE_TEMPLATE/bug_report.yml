@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible defect in this repository.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Remove credentials, private prompts, and personal data. Use synthetic values in examples."
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem
+      description: What failed, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Provide the smallest steps and synthetic inputs needed to reproduce.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Checks already run
+      description: Include exact commands and observed outcomes, or say not run.
+    validations:
+      required: false
