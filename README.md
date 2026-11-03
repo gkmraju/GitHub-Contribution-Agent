@@ -56,3 +56,16 @@ PYTHONPATH=src python -m github_contribution_agent evaluate opportunity.json
 
 The result is `upstream`, `fallback`, or `reject`, with explicit reasons suitable
 for a daily log.
+
+## Screen for duplicate issues
+
+Use the offline duplicate matcher to surface same-repository issue candidates for
+human review. It does not decide that two issues are duplicates or write to GitHub.
+See [Issue analysis and duplicate screening](docs/ISSUE_ANALYSIS.md) for score
+interpretation and limitations.
+
+## Plan a bounded contribution
+
+Use `plan_contribution` to route a researched opportunity to upstream execution,
+fallback, further research, rejection, or a clear stop. It does not execute the
+plan. See [Contribution planning](docs/PLANNING.md) for route semantics and limits.
