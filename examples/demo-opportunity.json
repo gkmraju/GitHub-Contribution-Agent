@@ -1,0 +1,7 @@
+{
+  "repository": "example/demo",
+  "issue_url": "https://example.invalid/issues/1",
+  "title": "Synthetic example issue",
+  "area": "documentation",
+  "state": "open"
+}
